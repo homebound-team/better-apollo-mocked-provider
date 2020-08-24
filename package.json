@@ -1,0 +1,52 @@
+{
+  "name": "better-apollo-mocked-provider",
+  "version": "1.0.0-bump",
+  "private": true,
+  "engines": {
+    "node": ">=13.11.0"
+  },
+  "engineStrict": true,
+  "scripts": {
+    "build": "./node_modules/.bin/tsc",
+    "prepare": "npm run build",
+    "test": "./node_modules/.bin/jest --watch",
+    "format": "prettier --write 'src/**/*.{ts,js,tsx,jsx}'"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged --allow-empty"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,js,tsx,jsx}": "prettier --write"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "setupFilesAfterEnv": [
+      "./src/setupTests.ts"
+    ],
+    "testMatch": [
+      "<rootDir>/**/*.test.(ts|tsx)"
+    ]
+  },
+  "dependencies": {
+    "@apollo/client": "^3.1.3",
+    "graphql": "^15.3.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^10.4.9",
+    "@types/jest": "^25.2.3",
+    "@types/node": "12.12.3",
+    "@types/react": "16.9.11",
+    "husky": "^4.2.5",
+    "jest": "^26.4.2",
+    "lint-staged": "^10.1.2",
+    "prettier": "^2.1.0",
+    "prettier-plugin-organize-imports": "^1.1.1",
+    "ts-jest": "^26.2.0",
+    "typescript": "3.9.7"
+  }
+}
