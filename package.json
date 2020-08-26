@@ -3,6 +3,7 @@
   "repository": "github:homebound-team/better-apollo-mocked-provider",
   "version": "1.0.0-bump",
   "main": "./build/lib/index.js",
+  "types": "./build/lib",
   "engines": {
     "node": ">=13.11.0"
   },
