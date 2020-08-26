@@ -1,6 +1,7 @@
 {
   "name": "better-apollo-mocked-provider",
   "version": "1.0.0-bump",
+  "main": "./build/lib/index.js",
   "private": true,
   "engines": {
     "node": ">=13.11.0"
