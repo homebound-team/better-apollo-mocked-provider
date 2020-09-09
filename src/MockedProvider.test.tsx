@@ -91,13 +91,20 @@ describe("MockedProvider", () => {
       return null;
     }
 
+    const mock: MockedResponse = {
+      request: { query, variables },
+      result: { data: { user } },
+    };
+
     render(
-      <MockedProvider mocks={mocks}>
+      <MockedProvider mocks={[mock]}>
         <Component {...variables} />
       </MockedProvider>,
     );
 
-    return wait().then(resolve, reject);
+    return wait(() => {
+      expect(mock.requestedCount).toEqual(1);
+    }).then(resolve, reject);
   });
 
   it.async("should allow querying with the typename", async (resolve, reject) => {

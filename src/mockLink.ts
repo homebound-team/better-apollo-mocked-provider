@@ -1,7 +1,6 @@
 import { ApolloLink, FetchResult, GraphQLRequest, Operation } from "@apollo/client";
 import {
   addTypenameToDocument,
-  cloneDeep,
   Observable,
   removeClientSetsFromDocument,
   removeConnectionDirectiveFromDocument,
@@ -65,6 +64,7 @@ export class MockLink extends ApolloLink {
       const madeAny = !!this.madeResponsesByKey[key];
       const errorPrefix = madeAny ? "No more" : "No";
       const potentialVariables = possibleRequests.map((mr) => stringify(mr.request.variables || {}));
+      const madeVariables = (this.madeResponsesByKey[key] || []).map((mr) => stringify(mr.request.variables || {}));
 
       // The apollo-client impl returns `null` from here. This "seems fine" but the super tricky
       // thing is that `this.onError` turns into `throw error` which is purposefully suppressed if
@@ -89,8 +89,10 @@ export class MockLink extends ApolloLink {
         `Actual variables:`,
         requestVariables,
         ``,
-        `Expected variables:`,
+        `Mocked variables:`,
         ...potentialVariables,
+        // If there were previous requests, let the developer know that we know about them, i.e. their setup is correct
+        ...(madeVariables.length === 0 ? [] : ["Already made requests", ...madeVariables]),
       ];
       const message = lines.join("\n");
       // Highlight this as a usage error
@@ -99,6 +101,11 @@ export class MockLink extends ApolloLink {
     }
 
     const response = possibleRequests[responseIndex];
+
+    if (response.requestedCount === undefined) {
+      response.requestedCount = 0;
+    }
+    response.requestedCount++;
 
     // Homebound note: This is a breaking change: we only remove the request
     // from possibleRequests if the user has either:
@@ -158,17 +165,16 @@ function observableResult(
   });
 }
 
-// Left as-is from apollo-client
+// Homebound note: Removed the cloneDeep so that the caller can observe our .requested assignment.
 function normalizeMockedResponse(mockedResponse: MockedResponse): MockedResponse {
-  const newMockedResponse = cloneDeep(mockedResponse);
-  const queryWithoutConnection = removeConnectionDirectiveFromDocument(newMockedResponse.request.query);
+  const queryWithoutConnection = removeConnectionDirectiveFromDocument(mockedResponse.request.query);
   invariant(queryWithoutConnection, "query is required");
-  newMockedResponse.request.query = queryWithoutConnection!;
-  const query = removeClientSetsFromDocument(newMockedResponse.request.query);
+  mockedResponse.request.query = queryWithoutConnection!;
+  const query = removeClientSetsFromDocument(mockedResponse.request.query);
   if (query) {
-    newMockedResponse.request.query = query;
+    mockedResponse.request.query = query;
   }
-  return newMockedResponse;
+  return mockedResponse;
 }
 
 export interface MockApolloLink extends ApolloLink {
