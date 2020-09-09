@@ -89,7 +89,7 @@ export class MockLink extends ApolloLink {
         `Actual variables:`,
         requestVariables,
         ``,
-        `Expected variables:`,
+        `Mocked variables:`,
         ...potentialVariables,
         // If there were previous requests, let the developer know that we know about them, i.e. their setup is correct
         ...(madeVariables.length === 0 ? [] : ["Already made requests", ...madeVariables]),
