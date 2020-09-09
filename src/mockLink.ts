@@ -102,10 +102,10 @@ export class MockLink extends ApolloLink {
 
     const response = possibleRequests[responseIndex];
 
-    if (response.requested === undefined) {
-      response.requested = 0;
+    if (response.requestedCount === undefined) {
+      response.requestedCount = 0;
     }
-    response.requested++;
+    response.requestedCount++;
 
     // Homebound note: This is a breaking change: we only remove the request
     // from possibleRequests if the user has either:

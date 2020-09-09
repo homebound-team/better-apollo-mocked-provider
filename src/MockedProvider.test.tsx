@@ -103,7 +103,7 @@ describe("MockedProvider", () => {
     );
 
     return wait(() => {
-      expect(mock.requested).toEqual(1);
+      expect(mock.requestedCount).toEqual(1);
     }).then(resolve, reject);
   });
 
