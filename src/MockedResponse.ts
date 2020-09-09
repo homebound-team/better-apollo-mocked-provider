@@ -10,4 +10,5 @@ export interface MockedResponse<TData = Record<string, any>> {
   // Homebound note: Added as part of making MockLink behavior more sane/less opaque.
   loading?: boolean;
   newData?: ResultFunction<FetchResult>;
+  requested?: number;
 }
