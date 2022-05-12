@@ -8,13 +8,13 @@ workflows:
   workflow:
     jobs:
       - build:
-          context: npm
+          context: npm-readonly
           filters:
             branches:
               ignore:
                 - main
       - build:
-          context: npm
+          context: npm-publish
           publish: true
           filters:
             branches:
