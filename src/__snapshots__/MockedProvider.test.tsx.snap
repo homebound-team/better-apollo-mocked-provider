@@ -1,5 +1,72 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`General use should allow querying with the typename 1`] = `
+{
+  "__typename": "User",
+  "id": "user_id",
+}
+`;
+
+exports[`General use should error if the query in the mock and component do not match 1`] = `
+[ApolloError: No mocked responses for the query: GetUser
+Actual variables:
+{"username":"mock_username"}
+
+Mocked variables:]
+`;
+
+exports[`General use should error if the variables do not deep equal 1`] = `
+[ApolloError: No mocked responses for the query: GetUser
+Actual variables:
+{"age":42,"username":"some_user"}
+
+Mocked variables:
+{"age":13,"username":"some_user"}]
+`;
+
+exports[`General use should error if the variables in the mock and component do not match 1`] = `
+[ApolloError: No mocked responses for the query: GetUser
+Actual variables:
+{"username":"other_user"}
+
+Mocked variables:
+{"username":"mock_username"}]
+`;
+
+exports[`General use should mock the data 1`] = `
+{
+  "__typename": "User",
+  "id": "user_id",
+}
+`;
+
+exports[`General use should not error if the variables match but have different order 1`] = `
+{
+  "user": {
+    "__typename": "User",
+    "id": "user_id",
+  },
+}
+`;
+
+exports[`General use should pipe exceptions thrown in custom onError functions through the link chain 1`] = `
+[ApolloError: No mocked responses for the query: GetUser
+Actual variables:
+{"username":"mock_username"}
+
+Mocked variables:]
+`;
+
+exports[`General use should return "Mocked response should contain" errors in response 1`] = `[ApolloError: Mocked response should contain either result, error, or loading: {"query":"query GetUser($username: String!) {\\n  user(username: $username) {\\n    id\\n    __typename\\n  }\\n}"}]`;
+
+exports[`General use should return "No more mocked responses" errors in response 1`] = `
+[ApolloError: No mocked responses for the query: GetUser
+Actual variables:
+{}
+
+Mocked variables:]
+`;
+
 exports[`MockedProvider should allow querying with the typename 1`] = `
 Object {
   "__typename": "User",

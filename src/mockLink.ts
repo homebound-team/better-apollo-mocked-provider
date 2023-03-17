@@ -17,12 +17,15 @@ import { MockedResponse, ResultFunction } from "./MockedResponse";
  * can more easily see "ah that is why this didn't match".
  */
 export class MockLink extends ApolloLink {
-  public operation: Operation | undefined;
-  public addTypename: Boolean = true;
+  public addTypename: boolean = true;
   private mockedResponsesByKey: { [key: string]: MockedResponse[] } = {};
   private madeResponsesByKey: { [key: string]: MockedResponse[] } = {};
 
-  constructor(mockedResponses: ReadonlyArray<MockedResponse>, addTypename: Boolean = true) {
+  constructor(
+    mockedResponses: readonly MockedResponse[],
+    addTypename: boolean = true,
+    opts: { showWarnings?: boolean } = {},
+  ) {
     super();
     this.addTypename = addTypename;
     mockedResponses.forEach((res) => this.addMockedResponse(res));
@@ -31,17 +34,11 @@ export class MockLink extends ApolloLink {
   public addMockedResponse(mockedResponse: MockedResponse) {
     const normalizedMockedResponse = normalizeMockedResponse(mockedResponse);
     const key = requestToKey(normalizedMockedResponse.request, this.addTypename);
-    let mockedResponses = this.mockedResponsesByKey[key];
-    if (!mockedResponses) {
-      mockedResponses = [];
-      this.mockedResponsesByKey[key] = mockedResponses;
-    }
+    const mockedResponses = (this.mockedResponsesByKey[key] ??= []);
     mockedResponses.push(normalizedMockedResponse);
   }
 
   public request(operation: Operation): Observable<FetchResult> {
-    this.operation = operation;
-
     const key = requestToKey(operation, this.addTypename);
 
     // Homebound note: note that we use stringify to:
