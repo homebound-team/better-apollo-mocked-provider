@@ -1,23 +1,8 @@
 {
+  "extends": "@homebound/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "declaration": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "jsx": "react",
-    "lib": ["esnext"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "build/lib",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "es5"
-  },
-  "include": ["src"]
+    "types": ["jest"],
+    "jsx": "react-jsx",
+    "lib": ["dom", "es2022"]
+  }
 }

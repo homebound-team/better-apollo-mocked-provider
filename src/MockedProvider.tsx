@@ -13,7 +13,7 @@ import { MockLink } from "./mockLink";
 
 // Homebound note: This is ~100% unchanged from apollo.
 export interface MockedProviderProps<TSerializedCache = {}> {
-  mocks?: ReadonlyArray<MockedResponse>;
+  mocks?: readonly MockedResponse[];
   addTypename?: boolean;
   defaultOptions?: DefaultOptions;
   cache?: ApolloCache<TSerializedCache>;
@@ -21,6 +21,7 @@ export interface MockedProviderProps<TSerializedCache = {}> {
   childProps?: object;
   children?: React.ReactElement;
   link?: ApolloLink;
+  showWarnings?: boolean;
 }
 
 export interface MockedProviderState {
