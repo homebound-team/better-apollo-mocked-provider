@@ -2,8 +2,8 @@
   "name": "@homebound/better-apollo-mocked-provider",
   "repository": "github:homebound-team/better-apollo-mocked-provider",
   "version": "1.0.0-bump",
-  "main": "./build/lib/index.js",
-  "types": "./build/lib",
+  "main": "./dist/index.js",
+  "types": "./dist",
   "engineStrict": true,
   "scripts": {
     "build": "./node_modules/.bin/tsc",
