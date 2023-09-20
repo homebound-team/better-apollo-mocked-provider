@@ -6,9 +6,9 @@
   "types": "./dist",
   "engineStrict": true,
   "scripts": {
-    "build": "./node_modules/.bin/tsc",
+    "build": "tsc",
     "prepare": "yarn build",
-    "test": "./node_modules/.bin/jest --watch",
+    "test": "jest --watch",
     "format": "prettier --write 'src/**/*.{ts,js,tsx,jsx}'"
   },
   "husky": {
