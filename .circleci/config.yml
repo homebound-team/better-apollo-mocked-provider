@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@1.1.4
+  node: circleci/node@5.1.0
 
 workflows:
   version: 2
@@ -21,6 +21,16 @@ workflows:
               only:
                 - main
 
+commands:
+  bootstrap:
+    steps:
+      - checkout
+      - run: 'echo "npmAuthToken: $NPM_TOKEN" >> ${HOME}/.yarnrc.yml'
+      - node/install-packages:
+          pkg-manager: yarn-berry
+          with-cache: true
+          include-branch-in-cache-key: false
+
 jobs:
   build:
     parameters:
@@ -28,17 +38,13 @@ jobs:
         type: boolean
         default: false
     docker:
-      - image: cimg/node:18.13.0
+      - image: cimg/node:18.18.0
     working_directory: ~/project
     steps:
-      - checkout
-      - run: 'echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc'
-      - node/with-cache:
-          steps:
-            - run: npm install
-      - run: npm run build
+      - bootstrap
+      - run: yarn build
       - when:
           condition: <<parameters.publish>>
           steps:
             - run: ./bump.sh package.json
-            - run: npm publish
+            - run: yarn npm publish
