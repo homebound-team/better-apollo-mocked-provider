@@ -7,7 +7,7 @@
   "engineStrict": true,
   "scripts": {
     "build": "tsc",
-    "prepare": "yarn build",
+    "prepack": "yarn build",
     "test": "jest --watch",
     "format": "prettier --write 'src/**/*.{ts,js,tsx,jsx}'"
   },
