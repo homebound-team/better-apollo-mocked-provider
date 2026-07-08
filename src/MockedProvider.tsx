@@ -1,23 +1,16 @@
-import {
-  ApolloCache,
-  ApolloClient,
-  ApolloLink,
-  ApolloProvider,
-  DefaultOptions,
-  InMemoryCache,
-  Resolvers,
-} from "@apollo/client";
+import { ApolloCache, ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client";
+import { LocalState } from "@apollo/client/local-state";
+import { ApolloProvider } from "@apollo/client/react";
 import React from "react";
 import { MockedResponse } from "./MockedResponse";
 import { MockLink } from "./mockLink";
 
 // Homebound note: This is ~100% unchanged from apollo.
-export interface MockedProviderProps<TSerializedCache = {}> {
+export interface MockedProviderProps {
   mocks?: readonly MockedResponse[];
-  addTypename?: boolean;
-  defaultOptions?: DefaultOptions;
-  cache?: ApolloCache<TSerializedCache>;
-  resolvers?: Resolvers;
+  defaultOptions?: ApolloClient.DefaultOptions;
+  cache?: ApolloCache;
+  resolvers?: LocalState.Resolvers;
   childProps?: object;
   children?: React.ReactElement;
   link?: ApolloLink;
@@ -25,23 +18,22 @@ export interface MockedProviderProps<TSerializedCache = {}> {
 }
 
 export interface MockedProviderState {
-  client: ApolloClient<any>;
+  client: ApolloClient;
 }
 
 export class MockedProvider extends React.Component<MockedProviderProps, MockedProviderState> {
-  public static defaultProps: MockedProviderProps = {
-    addTypename: true,
-  };
-
   constructor(props: MockedProviderProps) {
     super(props);
 
-    const { mocks, addTypename, defaultOptions, cache, resolvers, link } = this.props;
+    const { mocks, defaultOptions, cache, resolvers, link } = this.props;
     const client = new ApolloClient({
-      cache: cache || new InMemoryCache({ addTypename }),
+      // Apollo Client 4 always normalizes queries with `__typename` (via the client's default
+      // document transform), and `MockLink` keys its mocks the same way to match.
+      cache: cache || new InMemoryCache(),
       defaultOptions,
-      link: link || new MockLink(mocks || [], addTypename),
-      resolvers,
+      link: link || new MockLink(mocks || []),
+      // Apollo Client 4 replaced the `resolvers` option with a `LocalState` instance.
+      localState: resolvers ? new LocalState({ resolvers }) : undefined,
     });
 
     this.state = { client };

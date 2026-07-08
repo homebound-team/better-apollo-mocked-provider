@@ -1,4 +1,5 @@
-import { ApolloClient, ApolloProvider, InMemoryCache, useSubscription } from "@apollo/client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { ApolloProvider, useSubscription } from "@apollo/client/react";
 import { render, waitFor } from "@testing-library/react";
 import gql from "graphql-tag";
 import React from "react";
@@ -17,7 +18,7 @@ describe("mockSubscriptionLink", () => {
     const link = new MockSubscriptionLink();
     const client = new ApolloClient({
       link,
-      cache: new InMemoryCache({ addTypename: false }),
+      cache: new InMemoryCache(),
     });
 
     let renderCountA = 0;
@@ -60,8 +61,10 @@ describe("mockSubscriptionLink", () => {
 
     return waitFor(
       () => {
-        // React 18
-        expect(renderCountA).toBe(2);
+        // Both subscribers observe the same mock websocket, so each of the four
+        // simulated results triggers a re-render on top of the initial render.
+        expect(renderCountA).toBe(5);
+        expect(renderCountB).toBe(5);
       },
       { timeout: 1000 },
     );
