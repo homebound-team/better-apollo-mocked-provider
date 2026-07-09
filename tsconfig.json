@@ -1,13 +1,11 @@
 {
   "extends": "@homebound/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "types": ["jest"],
+    // Everything else (ESM emit, declaration maps, verbatimModuleSyntax, rootDir/outDir,
+    // include/exclude) comes from the preset; we only add what's specific to this package.
+    // No ambient @types; test globals come from src/vitest-globals.d.ts, everything else is imported.
+    "types": [],
     "jsx": "react-jsx",
-    "lib": ["dom", "es2022"],
-    "rootDir": "src",
-    // The base preset uses node10 resolution + baseUrl, which TS6 deprecates (dropped in TS7).
-    // We keep them for now (they support the `graphql/language/printer` deep import and the
-    // package's CommonJS emit) and silence the deprecation. Revisit before upgrading to TS7.
-    "ignoreDeprecations": "6.0"
+    "lib": ["dom", "es2022"]
   }
 }

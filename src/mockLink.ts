@@ -1,8 +1,8 @@
 import { ApolloLink } from "@apollo/client";
 import { addTypenameToDocument, Observable } from "@apollo/client/utilities";
 import stringify from "fast-json-stable-stringify";
-import { print } from "graphql/language/printer";
-import { MockedResponse, ResultFunction } from "./MockedResponse";
+import { print } from "graphql";
+import type { MockedResponse, ResultFunction } from "./MockedResponse.js";
 
 /**
  * A fork of apollo-client's `MockLink` to be more developer friendly.

@@ -1,4 +1,4 @@
-import { FetchResult, GraphQLRequest } from "@apollo/client";
+import type { FetchResult, GraphQLRequest } from "@apollo/client";
 
 export type ResultFunction<T> = () => T;
 

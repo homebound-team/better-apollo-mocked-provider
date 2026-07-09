@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache } from "@apollo/client";
-import { DocumentNode } from "graphql";
-import { MockLink } from "./mockLink";
+import type { DocumentNode } from "graphql";
+import { MockLink } from "./mockLink.js";
 
 /** I.e. `createMockClient(data, query)` → an `ApolloClient` that resolves `query` with `data`. */
 export function createMockClient<TData extends Record<string, any>>(

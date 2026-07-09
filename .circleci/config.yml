@@ -43,6 +43,7 @@ jobs:
     steps:
       - bootstrap
       - run: yarn build
+      - run: yarn test
       - when:
           condition: <<parameters.publish>>
           steps:
