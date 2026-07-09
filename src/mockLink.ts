@@ -19,11 +19,13 @@ export class MockLink extends ApolloLink {
     mockedResponses.forEach((res) => this.addMockedResponse(res));
   }
 
+  // Homebound note: Unlike apollo, we don't cloneDeep the response, so the caller can observe our
+  // `.requestedCount` assignment. (Apollo Client 4 dropped the `@connection` / `@client` directive
+  // stripping that used to happen here, as those were unnecessary implementation details.)
   public addMockedResponse(mockedResponse: MockedResponse) {
-    const normalizedMockedResponse = normalizeMockedResponse(mockedResponse);
-    const key = requestToKey(normalizedMockedResponse.request);
+    const key = requestToKey(mockedResponse.request);
     const mockedResponses = (this.mockedResponsesByKey[key] ??= []);
-    mockedResponses.push(normalizedMockedResponse);
+    mockedResponses.push(mockedResponse);
   }
 
   public request(operation: ApolloLink.Operation): Observable<ApolloLink.Result> {
@@ -148,24 +150,6 @@ function observableResult(
     const timer = setTimeout(resolve, delay ?? 0);
     return () => clearTimeout(timer);
   });
-}
-
-// Homebound note: Removed the cloneDeep so that the caller can observe our .requested assignment.
-//
-// Apollo Client 4 removed `removeConnectionDirectiveFromDocument` / `removeClientSetsFromDocument`
-// as unnecessary implementation details, so we no longer pre-strip those directives here.
-function normalizeMockedResponse(mockedResponse: MockedResponse): MockedResponse {
-  return mockedResponse;
-}
-
-export interface MockApolloLink extends ApolloLink {
-  operation?: ApolloLink.Operation;
-}
-
-// Pass in multiple mocked responses, so that you can test flows that end up
-// making multiple queries to the server.
-export function mockSingleLink(...mockedResponses: MockedResponse[]): MockApolloLink {
-  return new MockLink(mockedResponses);
 }
 
 // Apollo Client 4 always adds `__typename` to outgoing operations, so we always normalize the
