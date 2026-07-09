@@ -1,13 +1,7 @@
-import { ApolloLink, FetchResult, GraphQLRequest, Operation } from "@apollo/client";
-import {
-  addTypenameToDocument,
-  Observable,
-  removeClientSetsFromDocument,
-  removeConnectionDirectiveFromDocument,
-} from "@apollo/client/utilities";
+import { ApolloLink } from "@apollo/client";
+import { addTypenameToDocument, Observable } from "@apollo/client/utilities";
 import stringify from "fast-json-stable-stringify";
 import { print } from "graphql/language/printer";
-import { invariant } from "ts-invariant";
 import { MockedResponse, ResultFunction } from "./MockedResponse";
 
 /**
@@ -17,29 +11,25 @@ import { MockedResponse, ResultFunction } from "./MockedResponse";
  * can more easily see "ah that is why this didn't match".
  */
 export class MockLink extends ApolloLink {
-  public addTypename: boolean = true;
   private mockedResponsesByKey: { [key: string]: MockedResponse[] } = {};
   private madeResponsesByKey: { [key: string]: MockedResponse[] } = {};
 
-  constructor(
-    mockedResponses: readonly MockedResponse[],
-    addTypename: boolean = true,
-    opts: { showWarnings?: boolean } = {},
-  ) {
+  constructor(mockedResponses: readonly MockedResponse[], opts: { showWarnings?: boolean } = {}) {
     super();
-    this.addTypename = addTypename;
     mockedResponses.forEach((res) => this.addMockedResponse(res));
   }
 
+  // Homebound note: Unlike apollo, we don't cloneDeep the response, so the caller can observe our
+  // `.requestedCount` assignment. (Apollo Client 4 dropped the `@connection` / `@client` directive
+  // stripping that used to happen here, as those were unnecessary implementation details.)
   public addMockedResponse(mockedResponse: MockedResponse) {
-    const normalizedMockedResponse = normalizeMockedResponse(mockedResponse);
-    const key = requestToKey(normalizedMockedResponse.request, this.addTypename);
+    const key = requestToKey(mockedResponse.request);
     const mockedResponses = (this.mockedResponsesByKey[key] ??= []);
-    mockedResponses.push(normalizedMockedResponse);
+    mockedResponses.push(mockedResponse);
   }
 
-  public request(operation: Operation): Observable<FetchResult> {
-    const key = requestToKey(operation, this.addTypename);
+  public request(operation: ApolloLink.Operation): Observable<ApolloLink.Result> {
+    const key = requestToKey(operation);
 
     // Homebound note: note that we use stringify to:
     //
@@ -141,17 +131,17 @@ export class MockLink extends ApolloLink {
 }
 
 function observableResult(
-  result: FetchResult | ResultFunction<FetchResult> | undefined,
+  result: ApolloLink.Result | ResultFunction<ApolloLink.Result> | undefined,
   error: Error | undefined,
   loading: boolean | undefined,
   delay: number | undefined,
 ) {
-  return new Observable<FetchResult>((observer) => {
+  return new Observable<ApolloLink.Result>((observer) => {
     const resolve = () => {
       if (error) {
         observer.error(error);
       } else if (result) {
-        observer.next(typeof result === "function" ? (result as ResultFunction<FetchResult>)() : result);
+        observer.next(typeof result === "function" ? (result as ResultFunction<ApolloLink.Result>)() : result);
         observer.complete();
       } else if (loading) {
         // leave it loading
@@ -162,41 +152,10 @@ function observableResult(
   });
 }
 
-// Homebound note: Removed the cloneDeep so that the caller can observe our .requested assignment.
-function normalizeMockedResponse(mockedResponse: MockedResponse): MockedResponse {
-  const queryWithoutConnection = removeConnectionDirectiveFromDocument(mockedResponse.request.query);
-  invariant(queryWithoutConnection, "query is required");
-  mockedResponse.request.query = queryWithoutConnection!;
-  const query = removeClientSetsFromDocument(mockedResponse.request.query);
-  if (query) {
-    mockedResponse.request.query = query;
-  }
-  return mockedResponse;
-}
-
-export interface MockApolloLink extends ApolloLink {
-  operation?: Operation;
-}
-
-// Pass in multiple mocked responses, so that you can test flows that end up
-// making multiple queries to the server.
-// NOTE: The last arg can optionally be an `addTypename` arg.
-export function mockSingleLink(...mockedResponses: Array<any>): MockApolloLink {
-  // To pull off the potential typename. If this isn't a boolean, we'll just
-  // set it true later.
-  let maybeTypename = mockedResponses[mockedResponses.length - 1];
-  let mocks = mockedResponses.slice(0, mockedResponses.length - 1);
-
-  if (typeof maybeTypename !== "boolean") {
-    mocks = mockedResponses;
-    maybeTypename = true;
-  }
-
-  return new MockLink(mocks, maybeTypename);
-}
-
-function requestToKey(request: GraphQLRequest, addTypename: Boolean): string {
-  const queryString = request.query && print(addTypename ? addTypenameToDocument(request.query) : request.query);
+// Apollo Client 4 always adds `__typename` to outgoing operations, so we always normalize the
+// mock's query the same way to keep request keys matching.
+function requestToKey(request: ApolloLink.Request): string {
+  const queryString = request.query && print(addTypenameToDocument(request.query));
   const requestKey = { query: queryString };
   return JSON.stringify(requestKey);
 }

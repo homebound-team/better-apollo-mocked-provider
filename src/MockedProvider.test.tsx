@@ -2,7 +2,8 @@ import { render, waitFor } from "@testing-library/react";
 import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
 
-import { ApolloLink, InMemoryCache, useQuery } from "@apollo/client";
+import { ApolloLink, InMemoryCache } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { MockedProvider } from "./MockedProvider";
 import { MockedResponse } from "./MockedResponse";
 import { MockLink } from "./mockLink";
@@ -59,13 +60,12 @@ interface Variables {
 
 let errorThrown = false;
 const errorLink = new ApolloLink((operation, forward) => {
-  let observer = null;
   try {
-    observer = forward(operation);
+    return forward(operation);
   } catch (error) {
     errorThrown = true;
+    throw error;
   }
-  return observer;
 });
 
 describe("General use", () => {
@@ -433,7 +433,7 @@ describe("General use", () => {
       return null;
     }
 
-    const link = ApolloLink.from([errorLink, new MockLink([], true, { showWarnings: false })]);
+    const link = ApolloLink.from([errorLink, new MockLink([], { showWarnings: false })]);
 
     render(
       <MockedProvider link={link}>
@@ -598,7 +598,7 @@ describe("General use", () => {
       },
     ];
 
-    const link = new MockLink(mocksDifferentQuery, false, { showWarnings: false });
+    const link = new MockLink(mocksDifferentQuery, { showWarnings: false });
 
     render(
       <MockedProvider link={link}>
@@ -651,10 +651,7 @@ describe("General use", () => {
       return null;
     }
 
-    const mockLink = new MockLink([], true, { showWarnings: false });
-    mockLink.setOnError(() => {
-      throw new Error("oh no!");
-    });
+    const mockLink = new MockLink([], { showWarnings: false });
     const link = ApolloLink.from([errorLink, mockLink]);
 
     render(
@@ -691,7 +688,7 @@ describe("@client testing", () => {
     });
 
     function Component() {
-      const { loading, data } = useQuery(gql`
+      const { loading, data } = useQuery<{ networkStatus: { __typename: string; isOnline: boolean } }>(gql`
         {
           networkStatus @client {
             isOnline
@@ -735,7 +732,7 @@ describe("@client testing", () => {
     });
 
     function Component() {
-      const { loading, data } = useQuery(gql`
+      const { loading, data } = useQuery<{ networkStatus: { __typename: string; isOnline: boolean } }>(gql`
         {
           networkStatus @client {
             isOnline
