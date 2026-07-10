@@ -2,13 +2,16 @@
   "name": "@homebound/better-apollo-mocked-provider",
   "repository": "github:homebound-team/better-apollo-mocked-provider",
   "version": "1.0.0-bump",
+  "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "engineStrict": true,
   "scripts": {
     "build": "tsc",
     "prepack": "yarn build",
-    "test": "jest --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write 'src/**/*.{ts,js,tsx,jsx}'"
   },
   "husky": {
@@ -19,16 +22,6 @@
   "lint-staged": {
     "src/**/*.{ts,js,tsx,jsx}": "prettier --write"
   },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "./src/setupTests.ts"
-    ],
-    "testMatch": [
-      "<rootDir>/**/*.test.(ts|tsx)"
-    ]
-  },
   "peerDependencies": {
     "@apollo/client": ">=4",
     "react": ">=18"
@@ -38,26 +31,23 @@
   },
   "devDependencies": {
     "@apollo/client": "^4.2.6",
-    "@homebound/tsconfig": "^1.1.1",
+    "@homebound/tsconfig": "^1.2.0",
     "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@types/jest": "^30.0.0",
     "@types/node": "~26.1.1",
     "@types/react": "^19.2.17",
     "graphql": "^16.14.2",
     "graphql-tag": "^2.12.7",
     "husky": "^4.3.8",
-    "jest": "^30.4.2",
-    "jest-environment-jsdom": "^30.4.1",
+    "jsdom": "^29.1.1",
     "lint-staged": "^17.0.8",
     "prettier": "^3.9.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "rxjs": "^7.8.2",
-    "ts-jest": "^29.4.11",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   },
   "packageManager": "yarn@4.17.0"
 }

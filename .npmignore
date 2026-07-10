@@ -1,8 +1,23 @@
 /.circleci
 /.yarn
 /.nvmrc
-/.prettierrc.js
+/.prettierrc.cjs
 /bump.sh
 /package.json.bak
 /yarn.lock
 /tsconfig.json
+/vitest.config.ts
+
+# Test files (test-only; consumers don't need them). Patterns are unanchored so they
+# match the emitted `dist/` copies as well as the `src/` originals we ship for source maps.
+*.test.ts
+*.test.tsx
+*.test.js
+*.test.d.ts
+*.test.d.ts.map
+__snapshots__/
+setupTests.ts
+setupTests.js
+setupTests.d.ts
+setupTests.d.ts.map
+vitest-globals.d.ts

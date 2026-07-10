@@ -1,9 +1,9 @@
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 import { ApolloProvider, useSubscription } from "@apollo/client/react";
 import { render, waitFor } from "@testing-library/react";
-import gql from "graphql-tag";
+import { gql } from "graphql-tag";
 import React from "react";
-import { MockSubscriptionLink } from "./mockSubscriptionLink";
+import { MockSubscriptionLink } from "./mockSubscriptionLink.js";
 
 describe("mockSubscriptionLink", () => {
   it("should work with multiple subscribers to the same mock websocket", () => {

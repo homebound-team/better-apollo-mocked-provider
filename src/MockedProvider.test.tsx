@@ -1,12 +1,12 @@
 import { render, waitFor } from "@testing-library/react";
-import { DocumentNode } from "graphql";
-import gql from "graphql-tag";
+import type { DocumentNode } from "graphql";
+import { gql } from "graphql-tag";
 
 import { ApolloLink, InMemoryCache } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-import { MockedProvider } from "./MockedProvider";
-import { MockedResponse } from "./MockedResponse";
-import { MockLink } from "./mockLink";
+import { MockedProvider } from "./MockedProvider.js";
+import type { MockedResponse } from "./MockedResponse.js";
+import { MockLink } from "./mockLink.js";
 
 const variables = {
   username: "mock_username",
@@ -487,7 +487,7 @@ describe("General use", () => {
   });
 
   it.skip("shows a warning in the console when there is no matched mock", async () => {
-    const consoleSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     let finished = false;
     function Component({ ...variables }: Variables) {
       const { loading } = useQuery<Data, Variables>(query, { variables });
@@ -530,7 +530,7 @@ describe("General use", () => {
   });
 
   it("silences console warning for unmatched mocks when `showWarnings` is `false`", async () => {
-    const consoleSpy = jest.spyOn(console, "warn");
+    const consoleSpy = vi.spyOn(console, "warn");
     let finished = false;
     function Component({ ...variables }: Variables) {
       const { loading } = useQuery<Data, Variables>(query, { variables });
@@ -572,7 +572,7 @@ describe("General use", () => {
   });
 
   it("silences console warning for unmatched mocks when passing `showWarnings` to `MockLink` directly", async () => {
-    const consoleSpy = jest.spyOn(console, "warn");
+    const consoleSpy = vi.spyOn(console, "warn");
     let finished = false;
     function Component({ ...variables }: Variables) {
       const { loading } = useQuery<Data, Variables>(query, { variables });

@@ -1,9 +1,9 @@
-import { ApolloCache, ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client";
+import { type ApolloCache, ApolloClient, type ApolloLink, InMemoryCache } from "@apollo/client";
 import { LocalState } from "@apollo/client/local-state";
 import { ApolloProvider } from "@apollo/client/react";
 import React from "react";
-import { MockedResponse } from "./MockedResponse";
-import { MockLink } from "./mockLink";
+import type { MockedResponse } from "./MockedResponse.js";
+import { MockLink } from "./mockLink.js";
 
 // Homebound note: This is ~100% unchanged from apollo.
 export interface MockedProviderProps {
