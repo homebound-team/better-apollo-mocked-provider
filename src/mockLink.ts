@@ -1,7 +1,8 @@
 import { ApolloLink } from "@apollo/client";
 import { addTypenameToDocument, Observable } from "@apollo/client/utilities";
+import { removeDirectivesFromDocument } from "@apollo/client/utilities/internal";
 import stringify from "fast-json-stable-stringify";
-import { print } from "graphql";
+import { type DocumentNode, print } from "graphql";
 import type { MockedResponse, ResultFunction } from "./MockedResponse.js";
 
 /**
@@ -20,8 +21,7 @@ export class MockLink extends ApolloLink {
   }
 
   // Homebound note: Unlike apollo, we don't cloneDeep the response, so the caller can observe our
-  // `.requestedCount` assignment. (Apollo Client 4 dropped the `@connection` / `@client` directive
-  // stripping that used to happen here, as those were unnecessary implementation details.)
+  // `.requestedCount` assignment.
   public addMockedResponse(mockedResponse: MockedResponse) {
     const key = requestToKey(mockedResponse.request);
     const mockedResponses = (this.mockedResponsesByKey[key] ??= []);
@@ -152,10 +152,23 @@ function observableResult(
   });
 }
 
-// Apollo Client 4 always adds `__typename` to outgoing operations, so we always normalize the
-// mock's query the same way to keep request keys matching.
+/** Builds a stable key from the server-visible form of a request. I.e. without `@client` fields. */
 function requestToKey(request: ApolloLink.Request): string {
-  const queryString = request.query && print(addTypenameToDocument(request.query));
+  const serverQuery = getServerQuery(request.query);
+  const queryString = serverQuery && print(addTypenameToDocument(serverQuery));
   const requestKey = { query: queryString };
   return JSON.stringify(requestKey);
+}
+
+/** Applies the same client-only directive removal Apollo uses before invoking a link. */
+function getServerQuery(query: DocumentNode): DocumentNode | null {
+  // Mirror Apollo's MockLink ordering: first strip client-only metadata directives while keeping
+  // their selections, then remove whole selections marked @client and clean up their fragments.
+  const queryWithoutClientOnlyDirectives = removeDirectivesFromDocument(
+    [{ name: "connection" }, { name: "nonreactive" }, { name: "unmask" }],
+    query,
+  );
+  return queryWithoutClientOnlyDirectives
+    ? removeDirectivesFromDocument([{ name: "client", remove: true }], queryWithoutClientOnlyDirectives)
+    : null;
 }

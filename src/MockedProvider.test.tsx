@@ -1,9 +1,9 @@
-import { render, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { DocumentNode } from "graphql";
 import { gql } from "graphql-tag";
 
 import { ApolloLink, InMemoryCache } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { MockedProvider } from "./MockedProvider.js";
 import type { MockedResponse } from "./MockedResponse.js";
 import { MockLink } from "./mockLink.js";
@@ -36,6 +36,39 @@ const queryWithTypename: DocumentNode = gql`
       __typename
     }
   }
+`;
+
+// Reproduces generated documents where @client is hidden in an interpolated fragment dependency.
+// Apollo stripped this fragment before reaching the link while the mock retained it, so the same
+// original DocumentNode previously produced different request keys.
+const clientScheduleTaskFragment = gql`
+  fragment ClientScheduleTask on ScheduleTask {
+    localStatus @client
+  }
+`;
+
+const scheduleTaskFragment = gql`
+  fragment ScheduleTask on ScheduleTask {
+    id
+    status
+    ...ClientScheduleTask
+  }
+  ${clientScheduleTaskFragment}
+`;
+
+const saveScheduleTasksDocument = gql`
+  mutation SaveScheduleTasks($input: SaveScheduleTasksInput!) {
+    saveScheduleTasks(input: $input) {
+      schedule {
+        id
+        tasks {
+          ...ScheduleTask
+        }
+      }
+      clientMessage @client
+    }
+  }
+  ${scheduleTaskFragment}
 `;
 
 const mocks: ReadonlyArray<MockedResponse> = [
@@ -667,6 +700,62 @@ describe("General use", () => {
 });
 
 describe("@client testing", () => {
+  it("matches an original mutation document containing direct and transitive @client fields", async () => {
+    const mutationVariables = {
+      input: {
+        tasks: [{ id: "t:1", status: "COMPLETE" }],
+      },
+    };
+    const mutationResult = {
+      saveScheduleTasks: {
+        __typename: "SaveScheduleTasksResult",
+        schedule: {
+          __typename: "Schedule",
+          id: "s:1",
+          tasks: [
+            {
+              __typename: "ScheduleTask",
+              id: "t:1",
+              status: "COMPLETE",
+            },
+          ],
+        },
+      },
+    };
+    const mutationMock: MockedResponse = {
+      request: {
+        query: saveScheduleTasksDocument,
+        variables: mutationVariables,
+      },
+      result: { data: mutationResult },
+    };
+
+    function Component() {
+      const [saveScheduleTasks, { data, error }] = useMutation<typeof mutationResult, typeof mutationVariables>(
+        saveScheduleTasksDocument,
+      );
+      return (
+        <div>
+          <button onClick={() => saveScheduleTasks({ variables: mutationVariables })}>Save</button>
+          <span>{data?.saveScheduleTasks.schedule.id}</span>
+          <span>{error?.message}</span>
+        </div>
+      );
+    }
+
+    render(
+      <MockedProvider mocks={[mutationMock]} resolvers={{}}>
+        <Component />
+      </MockedProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("s:1")).toBeDefined();
+    });
+    expect(mutationMock.requestedCount).toBe(1);
+  });
+
   it.async("should support @client fields with a custom cache", (resolve, reject) => {
     let finished = false;
     const cache = new InMemoryCache();
