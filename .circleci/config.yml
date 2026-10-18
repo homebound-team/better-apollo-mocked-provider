@@ -14,7 +14,7 @@ workflows:
               ignore:
                 - main
       - build:
-          context: npm-publish
+          context: npm-trusted-publish
           publish: true
           filters:
             branches:
@@ -25,7 +25,6 @@ commands:
   bootstrap:
     steps:
       - checkout
-      - run: 'echo "npmAuthToken: $NPM_TOKEN" >> ${HOME}/.yarnrc.yml'
       - node/install-packages:
           pkg-manager: yarn-berry
           with-cache: true
@@ -48,4 +47,6 @@ jobs:
           condition: <<parameters.publish>>
           steps:
             - run: ./bump.sh package.json
-            - run: yarn npm publish
+            - run: |
+                export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud":"npm:registry.npmjs.org"}')
+                yarn npm publish
